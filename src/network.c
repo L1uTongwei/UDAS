@@ -1,6 +1,6 @@
 #include "network.h"
 
-int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(struct sockaddr_in*, int, char*, char*, char*)){
+int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(struct sockaddr_in*, int, char*, char*, char*, char*)){
     int sockfd = socket(AF_INET, mode, 0);
     #ifndef _WIN32
         if(sockfd == -1){
@@ -40,7 +40,7 @@ int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*c
             exit(WSAGetLastError());
         }
     #endif
-    char buf[37]; // Receive Buffer
+    char buf[438]; // Receive Buffer
     while(1){
         struct sockaddr_in clientAddr;
         int connfd = accept(sockfd, (struct sockaddr*)&clientAddr, sizeof(clientAddr));
@@ -49,11 +49,13 @@ int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*c
         #else
             if(connfd == SOCKET_ERROR) continue;
         #endif
-        // Accept Connect: (username 16) + (password 16) + (captcha 4) = 36
-        int n = recv(connfd, buf, 36, 0);
-        buf[15] = buf[31] = buf[36] = '\0';
-        if(n == 0) callback(&clientAddr, 0, NULL, NULL, NULL);
-        else callback(&clientAddr, 1, buf, buf + 16, buf + 32);
+        // Captcha: (token 36)
+        // Accept Connect: (username 16) + (password 16) + (captcha 4) + (1 byte reversed) + [metadata 400] = 37 / 437
+        int n = recv(connfd, buf, 437, 0);
+        buf[15] = buf[31] = buf[36] = buf[437] = '\0';
+        if(n == 36) callback(&clientAddr, 0, buf, NULL, NULL, NULL); // captcha, first argument is token
+        else if(n == 37) callback(&clientAddr, 1, buf, buf + 16, buf + 32, NULL); // login without metadata
+        else callback(&clientAddr, 1, buf, buf + 16, buf + 32, buf + 37); // register with metadata
         close(connfd);
     }
     #ifndef _WIN32
