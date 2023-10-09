@@ -1,6 +1,6 @@
 #include "network.h"
 
-int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(struct sockaddr_in*, int, char*, char*, char*, char*, char*)){
+int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(int, struct sockaddr_in*, int, char*)){
     int sockfd = socket(AF_INET, mode, 0);
     #ifndef _WIN32
         if(sockfd == -1){
@@ -49,13 +49,9 @@ int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*c
         #else
             if(connfd == SOCKET_ERROR) continue;
         #endif
-        // Captcha: (token 36)
-        // Accept Connect: (username 16) + (password 16) + (captcha 4) + (token 36) + [metadata 400] + (1 byte reversed) = 73 / 473
         int n = recv(connfd, buf, 437, 0);
         buf[15] = buf[31] = buf[36] = buf[437] = '\0';
-        if(n == 36) callback(&clientAddr, 0, NULL, NULL, NULL, buf, NULL); // captcha, first argument is token
-        else if(n == 73) callback(&clientAddr, 1, buf, buf + 16, buf + 32, buf + 36, NULL); // login without metadata
-        else callback(&clientAddr, 1, buf, buf + 16, buf + 32, buf + 36, buf + 72); // register with metadata
+        callback(sockfd, &clientAddr, n, buf);
         close(connfd);
     }
     #ifndef _WIN32

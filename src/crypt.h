@@ -1,5 +1,4 @@
 #pragma once
-
 // CH(x, y, z) = (x & y) ^ (!x & z)
 #define CH \
 "and r9, r8\n\t" \
@@ -74,4 +73,4 @@ const unsigned long long SHA_K[80] ={
     0x4cc5d4becb3e42b6ull, 0x597f299cfc657e2aull, 0x5fcb6fab3ad6faecull, 0x6c44198c4a475817ull
 };
 
-void SHA_512(unsigned long long buffer[8], char contents[48]);
+inline void SHA_512(unsigned long long buffer[8], char contents[48]) __attribute((always_inline));

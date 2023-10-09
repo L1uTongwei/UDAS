@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,4 +12,4 @@
 #endif
 #include <unistd.h>
 
-int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(struct sockaddr_in*, int, char*, char*, char*, char*, char*));
+inline int startServer(struct sockaddr_in addr, int port, int mode, int backlog, int(*callback)(int, struct sockaddr_in*, int, char*)) __attribute((always_inline));
