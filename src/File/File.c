@@ -1,6 +1,6 @@
-#pragma once
-#include <stdio.h>
-#include "asm_optimize.h"
+#include "File.h"
+#include "../asm_optimize.h"
+
 /*
 	2022-03-16 读取文件
 	将文件读取并存入char*数组
@@ -16,7 +16,7 @@ int read_file(const char* filename, char* s, int slen) {
 	//将图片读取出来
 	FILE* fp = fopen(filename, "rb");     //打开文件req.path.c_str() + 1
 	if (!fp) {//打开文件失败
-		printf("Filed to open %s,\n", filename);
+		printf("打开文件失败 %s,\n", filename);
 		return -1;
 	}
 	fseek(fp, 0, SEEK_END);  //一直寻找到文件尾部
